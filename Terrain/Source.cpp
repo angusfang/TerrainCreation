@@ -267,6 +267,14 @@ int main(int argc, char** argv)
 	//glEnableVertexAttribArray(1);
 
 	TextureData texture_data = Load_jpg("assets/map.jpg");
+	for (int h = 10; h < 50; h++) {
+		for (int w = 10; w < 50; w++) {
+			for (int a = 0; a < 3; a++) {
+				texture_data.data[(h * texture_data.width + w) * 3 + a] = 255;
+			}
+		}
+	}
+	
 	glGenTextures(1, &glo.texture_ID);
 	glBindTexture(GL_TEXTURE_2D, glo.texture_ID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, texture_data.width, texture_data.height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data.data);
