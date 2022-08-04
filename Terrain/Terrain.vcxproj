@@ -162,6 +162,8 @@
     <None Include="assets\tcs.glsl" />
     <None Include="assets\tes.glsl" />
     <None Include="assets\vertex.vs.glsl" />
+    <None Include="assets\win.fs.glsl" />
+    <None Include="assets\win.vs.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\map.jpg" />

@@ -9,7 +9,6 @@ using namespace glm;
 ViewManager camera;
 struct glo_var {
 	GLuint program = 0;
-	vec4 G_color_vec4 = vec4(1., 1., 1., 1.);
 	GLuint texture_ID = 0;
 	GLuint VBO_ID = 0;
 	GLuint VAO_ID = 0;
@@ -20,6 +19,12 @@ struct glo_var {
 	mat4 rotate_matrix = mat4(1.f);
 	float aspect =0.f;
 }glo;
+struct win_var {
+	GLuint program = 0;
+	GLuint texture_ID = 0;
+	GLuint VBO_ID = 0;
+	GLuint VAO_ID = 0;
+}win;
 const float ver[] = {
 	-1.f, -1.f, 0.f, 0.f, 0.f,
 	0.0f, 1.f, 0.f, 0.5f, 1.f,
@@ -79,6 +84,11 @@ void renderScene(void)
 	glUniformMatrix4fv(glGetUniformLocation(glo.program, "p"), 1, false, &p[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(glo.program, "mv"), 1, false, &mv[0][0]);
 	glDrawArrays(GL_PATCHES, 0, 3);
+
+	glDisable(GL_DEPTH_TEST);
+	glUseProgram(win.program);
+	glBindTexture(GL_TEXTURE_2D, glo.texture_ID);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glutSwapBuffers();
 
 }
@@ -143,21 +153,25 @@ void myKeyboard(int key, int x, int y) {
 	case GLUT_KEY_LEFT:
 		glo.lr += 1;
 		glo.rotate_matrix = rotate(mat4(1.), deg2rad(-10.f), vec3(0.f, 1.f, 0.f))*glo.rotate_matrix;
+		glUseProgram(glo.program);
 		glUniform1i(glGetUniformLocation(glo.program, "lr"), glo.lr);
 		break;
 	case GLUT_KEY_RIGHT:
 		glo.lr -= 1;
 		glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(+10.f), vec3(0.f, 1.f, 0.f));
+		glUseProgram(glo.program);
 		glUniform1i(glGetUniformLocation(glo.program, "lr"), glo.lr);
 		break;
 	case GLUT_KEY_UP:
 		glo.ud += 1;
 		glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(-10.f), vec3(1.f, 0.f, 0.f));
+		glUseProgram(glo.program);
 		glUniform1i(glGetUniformLocation(glo.program, "ud"), glo.ud);
 		break;
 	case GLUT_KEY_DOWN:
 		glo.ud -= 1;
 		glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(10.f), vec3(1.f, 0.f, 0.f));
+		glUseProgram(glo.program);
 		glUniform1i(glGetUniformLocation(glo.program, "ud"), glo.ud);
 		break;
 		
@@ -224,6 +238,24 @@ int main(int argc, char** argv)
 	glAttachShader(glo.program, fs);
 	glLinkProgram(glo.program);
 	glUseProgram(glo.program);
+
+	v_source = loadShaderSource("assets/win.vs.glsl");
+	f_source = loadShaderSource("assets/win.fs.glsl");
+	glShaderSource(vs, 1, v_source, NULL);
+	glShaderSource(fs, 1, f_source, NULL);
+	freeShaderSource(v_source);
+	freeShaderSource(f_source);
+	glCompileShader(vs);
+	glCompileShader(fs);
+	cout << "vs" << endl;
+	shaderLog(vs);
+	cout << "fs" << endl;
+	shaderLog(fs);
+	win.program = glCreateProgram();
+	glAttachShader(win.program, vs);
+	glAttachShader(win.program, fs);
+	glLinkProgram(win.program);
+
 	//glGenBuffers(1, &glo.VBO_ID);
 	//glBindBuffer(GL_ARRAY_BUFFER, glo.VBO_ID);
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(ver), ver, GL_STATIC_DRAW);

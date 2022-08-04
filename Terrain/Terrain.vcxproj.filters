@@ -52,6 +52,12 @@
     <None Include="assets\tes.glsl">
       <Filter>資源檔</Filter>
     </None>
+    <None Include="assets\win.vs.glsl">
+      <Filter>資源檔</Filter>
+    </None>
+    <None Include="assets\win.fs.glsl">
+      <Filter>資源檔</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\map.jpg">
