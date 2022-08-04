@@ -1,6 +1,6 @@
 #version 410
 
-layout(triangles, fractional_even_spacing, cw) in;
+layout(triangles, equal_spacing, cw) in;
 in vec3 pos_tcs[];
 in vec2 texPos_tcs[];
 out vec2 texPos_tes;

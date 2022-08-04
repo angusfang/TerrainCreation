@@ -14,8 +14,8 @@ struct glo_var {
 	GLuint VBO_ID = 0;
 	GLuint VAO_ID = 0;
 	int wheel = 10;
-	int lr = 0;
-	int ud = 0;
+	int lr = 10;
+	int ud = 10;
 	mat4 view_matrix = mat4(1.f);
 	mat4 rotate_matrix = mat4(1.f);
 	float aspect =0.f;
@@ -142,20 +142,23 @@ void myKeyboard(int key, int x, int y) {
 	switch (key) {
 	case GLUT_KEY_LEFT:
 		glo.lr += 1;
-		//glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(-10.f), vec3(0.f, 1.f, 0.f));
 		glo.rotate_matrix = rotate(mat4(1.), deg2rad(-10.f), vec3(0.f, 1.f, 0.f))*glo.rotate_matrix;
+		glUniform1i(glGetUniformLocation(glo.program, "lr"), glo.lr);
 		break;
 	case GLUT_KEY_RIGHT:
 		glo.lr -= 1;
 		glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(+10.f), vec3(0.f, 1.f, 0.f));
+		glUniform1i(glGetUniformLocation(glo.program, "lr"), glo.lr);
 		break;
 	case GLUT_KEY_UP:
 		glo.ud += 1;
 		glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(-10.f), vec3(1.f, 0.f, 0.f));
+		glUniform1i(glGetUniformLocation(glo.program, "ud"), glo.ud);
 		break;
 	case GLUT_KEY_DOWN:
 		glo.ud -= 1;
 		glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(10.f), vec3(1.f, 0.f, 0.f));
+		glUniform1i(glGetUniformLocation(glo.program, "ud"), glo.ud);
 		break;
 		
 	}
@@ -239,7 +242,8 @@ int main(int argc, char** argv)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glUniform1i(glGetUniformLocation(glo.program, "wheel"), glo.wheel);
+	glUniform1i(glGetUniformLocation(glo.program, "lr"), glo.lr);
+	glUniform1i(glGetUniformLocation(glo.program, "ud"), glo.ud);
 	
 	//register
 	glutDisplayFunc(renderScene);
