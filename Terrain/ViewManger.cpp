@@ -138,13 +138,8 @@ void ViewManager::mousePressEvent(int button, int x, int y)
 	{
 		lmbDown = true;
 		lmbDownCoord = vec2(x, y);
-		//mat4 invrtRot = inverse(rotationMatrix);
-		//rotateYAxis = (invrtRot * vec4(0, 1, 0, 0)).xyz;
 		rotateYAxis = (transpose(rotationMatrix) * vec4(0, 1, 0, 0)).xyz;
-		//rotateYAxis = (vec4(0, 1, 0, 0)).xyz;
-		//rotateXAxis = (invrtRot * vec4(1, 0, 0, 0)).xyz;
 		rotateXAxis = (transpose(rotationMatrix) * vec4(1, 0, 0, 0)).xyz;
-		//rotateXAxis = (vec4(1, 0, 0, 0)).xyz;
 	}
 	else if (button == GLUT_MIDDLE_BUTTON)
 	{

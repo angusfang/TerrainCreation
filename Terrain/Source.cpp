@@ -72,18 +72,9 @@ void renderScene(void)
 	glUseProgram(glo.program);
 	glBindTexture(GL_TEXTURE_2D, glo.texture_ID);
 	glPatchParameteri(GL_PATCH_VERTICES, 3);
-	mat4 m = translate(mat4(1.f), vec3(0.f, -0.2f, -2.f));
-	//m = rotate(m, deg2rad(45.f + float(glo.lr)), vec3(0.f, 1.f, 0.f));
-	//m = rotate(m, deg2rad(45.f + float(glo.ud)), vec3(-1.f, 0.f, 0.f));
-	//m = rotate(m, deg2rad(45.f + float(glo.ud)), vec3(-1.f, 0.f, 0.f));
-	
-	m = rotate(m, deg2rad(glo.lr), vec3(0.f, 1.f, 0.f));
-	vec4 x_axis = rotate(mat4(1.f), -deg2rad(glo.lr), vec3(0.f, 1.f, 0.f)) * vec4(1.f, 0.f, 0.f, 0.f);
-	m = rotate(m, deg2rad(glo.ud), vec3(x_axis.x, x_axis.y, x_axis.z));
-	//m = camera.GetModelMatrix();
 	mat4 p = camera.GetProjectionMatrix(glo.aspect);
 	mat4 v = camera.GetViewMatrix();
-	mat4 mv = v * glo.rotate_matrix;
+	mat4 mv = v * camera.GetModelMatrix();
 	glUseProgram(glo.program);
 	glUniformMatrix4fv(glGetUniformLocation(glo.program, "p"), 1, false, &p[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(glo.program, "mv"), 1, false, &mv[0][0]);
