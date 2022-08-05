@@ -147,12 +147,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Paint.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="ViewManger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
     <ClInclude Include="myCommon.h" />
+    <ClInclude Include="Paint.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="tiny_obj_loader.h" />
     <ClInclude Include="ViewManager.h" />

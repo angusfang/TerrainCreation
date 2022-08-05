@@ -3,10 +3,12 @@
 #include "glm\glm.hpp"
 #include "myCommon.h"
 #include "ViewManager.h"
+#include "Paint.h"
 #include <iostream>
 using namespace std;
 using namespace glm;
 ViewManager camera;
+Paint paint;
 struct glo_var {
 	GLuint program = 0;
 	GLuint texture_ID = 0;
@@ -18,6 +20,9 @@ struct glo_var {
 	mat4 view_matrix = mat4(1.f);
 	mat4 rotate_matrix = mat4(1.f);
 	float aspect =0.f;
+	TextureData texture_data;
+	int win_width = 0.f;
+	int win_height = 0.f;
 }glo;
 struct win_var {
 	GLuint program = 0;
@@ -35,7 +40,7 @@ char** loadShaderSource(const char* file) {
 	FILE* fp;
 	errno_t err = fopen_s(&fp, file, "rb");
 	if (err) {
-		cout << "load fail" << endl;
+		std::cout << "load fail" << endl;
 	}
 	else {
 		fseek(fp, 0, SEEK_END);
@@ -63,7 +68,7 @@ void shaderLog(GLuint shader) {
 		GLchar* infoLog = new GLchar[logLen + 1];
 		glGetShaderInfoLog(shader, logLen, &logLen, infoLog);
 		infoLog[logLen] = '\0';
-		cout << infoLog << endl;
+		std::cout << infoLog << endl;
 		delete[] infoLog;
 	}
 }
@@ -76,6 +81,7 @@ void renderScene(void)
 	glEnable(GL_DEPTH_TEST);
 	glUseProgram(glo.program);
 	glBindTexture(GL_TEXTURE_2D, glo.texture_ID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, glo.texture_data.width, glo.texture_data.height, 0, GL_RGB, GL_UNSIGNED_BYTE, glo.texture_data.data);
 	glPatchParameteri(GL_PATCH_VERTICES, 3);
 	mat4 p = camera.GetProjectionMatrix(glo.aspect);
 	mat4 v = camera.GetViewMatrix();
@@ -88,52 +94,27 @@ void renderScene(void)
 	glDisable(GL_DEPTH_TEST);
 	glUseProgram(win.program);
 	glBindTexture(GL_TEXTURE_2D, glo.texture_ID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, glo.texture_data.width, glo.texture_data.height, 0, GL_RGB, GL_UNSIGNED_BYTE, glo.texture_data.data);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glutSwapBuffers();
 
 }
-void myMouse(int btn, int state, int x, int y) {
-	camera.mouseEvents(btn, state, x, y);
-	if (state == GLUT_DOWN) {
-		switch (btn) {
-		case GLUT_LEFT_BUTTON:
-			std::cout << "left click at: (" << x << ", " << y << ")\n";
-			break;
-		case GLUT_RIGHT_BUTTON:
-			std::cout << "right click at: (" << x << ", " << y << ")\n";
-			break;
-		case GLUT_MIDDLE_BUTTON:
-			std::cout << "middle click at: (" << x << ", " << y << ")\n";
-			break;
-		case 3:  //mouse wheel scrolls
-
-			glo.wheel += 1;
-			std::cout << glo.wheel;
-			glUniform1i(glGetUniformLocation(glo.program, "wheel"), glo.wheel);
-			break;
-		case 4:
-			glo.wheel = glo.wheel - 1 >= 0 ? glo.wheel - 1 : glo.wheel;
-			std::cout << glo.wheel;
-			glUniform1i(glGetUniformLocation(glo.program, "wheel"), glo.wheel);
-			break;
-		default:
-			break;
-		}
-	}
-	glutPostRedisplay();
-}
 void myMotion(int x, int y) {
 	camera.mouseMoveEvent(x, y);
-	cout << x <<"," << y << endl;
+	paint.mouseMovement(x, y);
+	std::cout << x <<"," << y << endl;
 	glo.view_matrix = translate(mat4(1.f), vec3((float)x, (float)y, 0.f));
-	cout << glo.view_matrix[3].x << "," << glo.view_matrix[3].y << "$$" << endl;
+	std::cout << glo.view_matrix[3].x << "," << glo.view_matrix[3].y << "$$" << endl;
 	glutPostRedisplay();
 }
 void myReshape(int width, int height) {
 
 	glViewport(0, 0, width, height);
 	camera.SetWindowSize(width, height);
+	paint.PaintSet(glo.texture_data.width, glo.texture_data.height, int(width / 4.f), height, glo.texture_data.data);
 	glo.aspect = (float)width / (float)height;
+	glo.win_width = width;
+	glo.win_height = height;
 }
 void myMenu(int id) {
 	switch (id) {
@@ -178,8 +159,40 @@ void myKeyboard(int key, int x, int y) {
 	}
 	glutPostRedisplay();
 }
+void myMouse(int btn, int state, int x, int y) {
+	if (x>glo.win_width*0.25)camera.mouseEvents(btn, state, x, y);
+	else paint.mouseEvent(btn, state, x, y);
+	if (state == GLUT_DOWN) {
+		switch (btn) {
+		case GLUT_LEFT_BUTTON:
+			std::cout << "left click at: (" << x << ", " << y << ")\n";
+			break;
+		case GLUT_RIGHT_BUTTON:
+			std::cout << "right click at: (" << x << ", " << y << ")\n";
+			break;
+		case GLUT_MIDDLE_BUTTON:
+			std::cout << "middle click at: (" << x << ", " << y << ")\n";
+			break;
+		case 3:  //mouse wheel scrolls
+
+			glo.wheel += 1;
+			std::cout << glo.wheel;
+			glUniform1i(glGetUniformLocation(glo.program, "wheel"), glo.wheel);
+			break;
+		case 4:
+			glo.wheel = glo.wheel - 1 >= 0 ? glo.wheel - 1 : glo.wheel;
+			std::cout << glo.wheel;
+			glUniform1i(glGetUniformLocation(glo.program, "wheel"), glo.wheel);
+			break;
+		default:
+			break;
+		}
+	}
+	glutPostRedisplay();
+}
 void My_Mouse_Moving(int x, int y) {
 	camera.mouseMoveEvent(x, y);
+	paint.mouseMovement(x, y);
 	glutPostRedisplay();
 }
 void My_Keyboard(unsigned char key, int x, int y)
@@ -223,13 +236,13 @@ int main(int argc, char** argv)
 	glCompileShader(tcs);
 	glCompileShader(tes);
 	glCompileShader(fs);
-	cout << "vs" << endl;
+	std::cout << "vs" << endl;
 	shaderLog(vs);
-	cout << "tcs" << endl;
+	std::cout << "tcs" << endl;
 	shaderLog(tcs);
-	cout << "tes" << endl;
+	std::cout << "tes" << endl;
 	shaderLog(tes);
-	cout << "fs" << endl;
+	std::cout << "fs" << endl;
 	shaderLog(fs);
 	glo.program = glCreateProgram();
 	glAttachShader(glo.program, vs);
@@ -247,9 +260,9 @@ int main(int argc, char** argv)
 	freeShaderSource(f_source);
 	glCompileShader(vs);
 	glCompileShader(fs);
-	cout << "vs" << endl;
+	std::cout << "vs" << endl;
 	shaderLog(vs);
-	cout << "fs" << endl;
+	std::cout << "fs" << endl;
 	shaderLog(fs);
 	win.program = glCreateProgram();
 	glAttachShader(win.program, vs);
@@ -266,18 +279,12 @@ int main(int argc, char** argv)
 	//glEnableVertexAttribArray(0);
 	//glEnableVertexAttribArray(1);
 
-	TextureData texture_data = Load_jpg("assets/map.jpg");
-	for (int h = 10; h < 50; h++) {
-		for (int w = 10; w < 50; w++) {
-			for (int a = 0; a < 3; a++) {
-				texture_data.data[(h * texture_data.width + w) * 3 + a] = 255;
-			}
-		}
-	}
+	glo.texture_data = Load_jpg("assets/map.jpg");
+
 	
 	glGenTextures(1, &glo.texture_ID);
 	glBindTexture(GL_TEXTURE_2D, glo.texture_ID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, texture_data.width, texture_data.height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data.data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, glo.texture_data.width, glo.texture_data.height, 0, GL_RGB, GL_UNSIGNED_BYTE, glo.texture_data.data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
