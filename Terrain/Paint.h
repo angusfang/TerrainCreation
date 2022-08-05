@@ -10,11 +10,13 @@ public:
 	void PaintSet(int pic_width, int pic_height, int pane_width, int pane_height, unsigned char* picture);
 private:
 	bool lmb_down;
-	vec2 lmb_down_coor;
+	bool rmb_down;
+	bool mmb_down;
 	int pic_width;
 	int pic_height;
 	int pane_width;
 	int pane_height;
 	int pen_size;
+	int speed_color_change;
 	unsigned char* picture;
 };

@@ -17,8 +17,6 @@ struct glo_var {
 	int wheel = 10;
 	int lr = 10;
 	int ud = 10;
-	mat4 view_matrix = mat4(1.f);
-	mat4 rotate_matrix = mat4(1.f);
 	float aspect =0.f;
 	TextureData texture_data;
 	int win_width = 0.f;
@@ -89,7 +87,7 @@ void renderScene(void)
 	glUseProgram(glo.program);
 	glUniformMatrix4fv(glGetUniformLocation(glo.program, "p"), 1, false, &p[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(glo.program, "mv"), 1, false, &mv[0][0]);
-	glDrawArrays(GL_PATCHES, 0, 3);
+	glDrawArrays(GL_PATCHES, 0, 6);
 
 	glDisable(GL_DEPTH_TEST);
 	glUseProgram(win.program);
@@ -102,9 +100,7 @@ void renderScene(void)
 void myMotion(int x, int y) {
 	camera.mouseMoveEvent(x, y);
 	paint.mouseMovement(x, y);
-	std::cout << x <<"," << y << endl;
-	glo.view_matrix = translate(mat4(1.f), vec3((float)x, (float)y, 0.f));
-	std::cout << glo.view_matrix[3].x << "," << glo.view_matrix[3].y << "$$" << endl;
+	
 	glutPostRedisplay();
 }
 void myReshape(int width, int height) {
@@ -133,25 +129,21 @@ void myKeyboard(int key, int x, int y) {
 	switch (key) {
 	case GLUT_KEY_LEFT:
 		glo.lr += 1;
-		glo.rotate_matrix = rotate(mat4(1.), deg2rad(-10.f), vec3(0.f, 1.f, 0.f))*glo.rotate_matrix;
 		glUseProgram(glo.program);
 		glUniform1i(glGetUniformLocation(glo.program, "lr"), glo.lr);
 		break;
 	case GLUT_KEY_RIGHT:
 		glo.lr -= 1;
-		glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(+10.f), vec3(0.f, 1.f, 0.f));
 		glUseProgram(glo.program);
 		glUniform1i(glGetUniformLocation(glo.program, "lr"), glo.lr);
 		break;
 	case GLUT_KEY_UP:
 		glo.ud += 1;
-		glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(-10.f), vec3(1.f, 0.f, 0.f));
 		glUseProgram(glo.program);
 		glUniform1i(glGetUniformLocation(glo.program, "ud"), glo.ud);
 		break;
 	case GLUT_KEY_DOWN:
 		glo.ud -= 1;
-		glo.rotate_matrix = rotate(glo.rotate_matrix, deg2rad(10.f), vec3(1.f, 0.f, 0.f));
 		glUseProgram(glo.program);
 		glUniform1i(glGetUniformLocation(glo.program, "ud"), glo.ud);
 		break;
@@ -176,13 +168,9 @@ void myMouse(int btn, int state, int x, int y) {
 		case 3:  //mouse wheel scrolls
 
 			glo.wheel += 1;
-			std::cout << glo.wheel;
-			glUniform1i(glGetUniformLocation(glo.program, "wheel"), glo.wheel);
 			break;
 		case 4:
 			glo.wheel = glo.wheel - 1 >= 0 ? glo.wheel - 1 : glo.wheel;
-			std::cout << glo.wheel;
-			glUniform1i(glGetUniformLocation(glo.program, "wheel"), glo.wheel);
 			break;
 		default:
 			break;
@@ -197,8 +185,30 @@ void My_Mouse_Moving(int x, int y) {
 }
 void My_Keyboard(unsigned char key, int x, int y)
 {
+	unsigned char* copy_picture = 0;
 	camera.keyEvents(key);
-
+	switch (key)
+	{
+	case 'z':
+	case 'Z':
+		
+		copy_picture = new unsigned char[glo.texture_data.width * glo.texture_data.height * 3];
+		memcpy(copy_picture, glo.texture_data.data, glo.texture_data.width * glo.texture_data.height * 3);
+		for (size_t i = 0; i < glo.texture_data.width; i++)
+		{
+			for (size_t j = 0; j < glo.texture_data.height / 2; j++)
+			{
+				for (size_t k = 0; k < 3; k++) {
+					std::swap(copy_picture[(j * glo.texture_data.width + i) * 3 + k], copy_picture[((glo.texture_data.height - j - 1) * glo.texture_data.width + i) * 3 + k]);
+				}
+			}
+		}
+		stbi_write_jpg("assets/save.jpg", glo.texture_data.width, glo.texture_data.height, 3, copy_picture, 0);
+		delete[] copy_picture;
+		break;
+	default:
+		break;
+	}
 	printf("Key %c is pressed at (%d, %d)\n", key, x, y);
 	glutPostRedisplay();
 }
@@ -301,12 +311,12 @@ int main(int argc, char** argv)
 	glutPassiveMotionFunc(My_Mouse_Moving);
 	glutKeyboardFunc(My_Keyboard);
 
-	int N_menu_main = glutCreateMenu(myMenu);
-	glutSetMenu(N_menu_main);
-	glutAddMenuEntry("00", 0);
-	glutAddMenuEntry("01", 1);
-	glutAddMenuEntry("Exit", 2);
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
+	//int N_menu_main = glutCreateMenu(myMenu);
+	//glutSetMenu(N_menu_main);
+	//glutAddMenuEntry("00", 0);
+	//glutAddMenuEntry("01", 1);
+	//glutAddMenuEntry("Exit", 2);
+	//glutAttachMenu(GLUT_MIDDLE_BUTTON);
 
 	glutMainLoop();//enters the GLUT event processing loop.  
 	return 0;

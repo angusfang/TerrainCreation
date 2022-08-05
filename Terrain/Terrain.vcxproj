@@ -156,6 +156,7 @@
     <ClInclude Include="myCommon.h" />
     <ClInclude Include="Paint.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="tiny_obj_loader.h" />
     <ClInclude Include="ViewManager.h" />
   </ItemGroup>
